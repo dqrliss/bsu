@@ -50,11 +50,11 @@ int main() {
     if (hThread_ == NULL) {
         return GetLastError();
     }
-    WaitForSingleObject(hThread_, INFINITE);
     hThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)average, NULL, 0, &IDThread);
     if (hThread == NULL) {
         return GetLastError();
     }
+    WaitForSingleObject(hThread_, INFINITE);
     WaitForSingleObject(hThread, INFINITE);
     CloseHandle(hThread);
     CloseHandle(hThread_);
