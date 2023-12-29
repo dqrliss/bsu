@@ -16,7 +16,8 @@ int main() {
     std::cin >> quantity_of_employees;
 
     char cmd_line_args_c[100]; //to creator
-    wsprintfA(cmd_line_args_c, "C:\\Users\\dq\\source\\repos\\lab1\\Main\\x64\\Debug\\Creator.exe %d %s",
+    wsprintfA(cmd_line_args_c,
+        "C:\\Users\\dq\\source\\repos\\lab1\\Main\\x64\\Debug\\Creator.exe %d %s",
         quantity_of_employees, name_of_binary_file);
     
     STARTUPINFO si;
@@ -41,7 +42,8 @@ int main() {
     std::cout << "\nbinary file contents:\n";
     for (int i = 0; i < quantity_of_employees; i++) {
         is.read((char*)&emp, sizeof(employee));
-        std::cout << emp.num << std::setw(10) << emp.name << std::setw(10) << emp.hours << "\n";
+        std::cout << emp.num << std::setw(10) << emp.name
+            << std::setw(10) << emp.hours << '\n';
     }
     is.close();
 
@@ -55,7 +57,8 @@ int main() {
     std::cout << '\n';
 
     char cmd_line_args_r[100]; //to reporter
-    wsprintfA(cmd_line_args_r, "C:\\Users\\dq\\source\\repos\\lab1\\Main\\x64\\Debug\\Reporter.exe %d %s %s",
+    wsprintfA(cmd_line_args_r,
+        "C:\\Users\\dq\\source\\repos\\lab1\\Main\\x64\\Debug\\Reporter.exe %d %s %s",
         hourly_wage, name_of_binary_file, name_of_report_file);
 
     STARTUPINFO si_;
