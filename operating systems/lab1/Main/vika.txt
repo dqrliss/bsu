@@ -1,3 +1,4 @@
-report on file vika.bin:
-1	irka	17	289
-2	nastya	11	187
+report on the file vika.bin
+455       ira        18        54
+674      vika        11        33
+800    nastya        15        45
