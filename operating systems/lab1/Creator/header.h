@@ -1,7 +1,6 @@
 #pragma once
 
-struct employee
-{
+struct employee {
 	int num;
 	char name[10];
 	double hours;
