@@ -1,4 +1,0 @@
-/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -DBOOST_ROOT=/Users/dq/CLionProjects/lab3/cmake-build-debug/boost_1_84_0 -G Ninja -S /Users/dq/CLionProjects/lab3 -B /Users/dq/CLionProjects/lab3/cmake-build-debug
--- Configuring done
--- Generating done
--- Build files have been written to: /Users/dq/CLionProjects/lab3/cmake-build-debug
