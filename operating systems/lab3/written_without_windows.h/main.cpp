@@ -31,9 +31,9 @@ void my_thread(int i, std::vector<int>& v, std::vector<bool>& marked) {
     marker_sems[i].wait();
     srand(i);
 
-    int quantity_of_marked = 0;
+    int quantity_of_marked = 0, random_number;
     while (true) {
-        int random_number = rand() % v.size();
+        random_number = rand() % v.size();
         m.lock();
         if (v[random_number] == 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
