@@ -94,8 +94,12 @@ int main() {
 
         std::cout << "\nmarker to delete: ";
         std::cin >> marker_to_delete;
+        while (marker_to_delete < 1 || marker_to_delete > quantity_of_threads) {
+            std::cout << "wrong marker to delete, try again: ";
+            std::cin >> marker_to_delete;
+        }
         while (marked[marker_to_delete]) {
-            std::cout << "marker to delete: ";
+            std::cout << "marker has already deleted, try again: ";
             std::cin >> marker_to_delete;
         }
 
