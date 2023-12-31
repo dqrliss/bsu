@@ -81,8 +81,9 @@ int main() {
     for (int i = 1; i < quantity_of_threads + 1; i++) {
         marker[i] = new std::thread(my_thread, i, std::ref(v), std::ref(marked));
         marker[i]->detach();
-        marker_sems[i].signal();
     }
+    for (int i = 1; i < quantity_of_threads + 1; i++)
+        marker_sems[i].signal();
 
     int marker_to_delete, quantity_of_closed = 0;
     while (true) {
