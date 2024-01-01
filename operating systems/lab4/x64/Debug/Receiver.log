@@ -1,0 +1,3 @@
+﻿  Receiver.cpp
+C:\Users\dq\source\repos\lab4\Receiver\Receiver.cpp(76,28): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
+  Receiver.vcxproj -> C:\Users\dq\source\repos\lab4\Receiver\x64\Debug\Receiver.exe
