@@ -1,103 +1,159 @@
+﻿#include <windows.h> 
 #include <iostream>
-#include <thread>
-#include <chrono>
-std::mutex m;
 
-class semaphore
-{
-    unsigned int count_;
-    std::mutex mutex_;
-    std::condition_variable condition_;
+int n, quantity_of_threads;
+int* arr;
+CRITICAL_SECTION cs;
 
-public:
-    explicit semaphore(unsigned int initial_count) : count_(initial_count), mutex_(), condition_() {}
-
-    void signal() //aka release
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-
-        ++count_;
-        condition_.notify_one();
-    }
-
-    void wait() //aka acquire
-    {
-        std::unique_lock<std::mutex> lock(mutex_);
-        while (count_ == 0) condition_.wait(lock);
-        --count_;
-    }
-
-    semaphore() {
-        count_ = 0;
-    }
+struct struct_to_thread {
+    int number;
+    bool marked;
+    HANDLE hEventFrom;
+    HANDLE hEventTo;
 };
 
-semaphore pause_sem(0);
-semaphore* marker_sems;
-
-void first (int i, std::vector<int>& v, std::vector<bool>& marked) {
-    marker_sems[i].wait();
-    srand(i);
-    int c = 0;
+void thread(struct_to_thread obj_of_stt) {
+    WaitForSingleObject(obj_of_stt.hEventTo, INFINITE);
+    srand(obj_of_stt.number);
+    int quantity_of_marked = 0, random_number;
     while (true) {
-        int temp = rand() % v.size();
-        m.lock();
-        if (v[temp] == 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            v[temp] = i;
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-            c++;
-            m.unlock();
+        random_number = rand() % n;
+
+        EnterCriticalSection(&cs);
+        if (arr[random_number] == 0) {
+            Sleep(5);
+            arr[random_number] = obj_of_stt.number;
+            Sleep(5);
+            quantity_of_marked++;
+            LeaveCriticalSection(&cs);
         }
+
         else {
-            std::cout << "\nserial number: " << i << ", quantity of marked elements: " << c << ", index of array element that cannot be marked: " << temp;
-            m.unlock();
-            pause_sem.signal();
-            marker_sems[i].wait();
-            if (marked[i]) {
-                m.lock();
-                for (int j = 0; j < v.size(); j++) if (v[j] == i) v[j] = 0;
-                m.unlock();
-                marker_sems[i].signal();
+            std::cout << "\nnumber: " << obj_of_stt.number
+                << ", quantity of marked elements: " << quantity_of_marked
+                << ", index of array element which cannot be marked: " << random_number
+                << '\n';
+            LeaveCriticalSection(&cs);
+
+            SetEvent(obj_of_stt.hEventFrom);
+
+            WaitForSingleObject(obj_of_stt.hEventTo, INFINITE);
+            if (obj_of_stt.marked) {
+                for (int i = 0; i < n; i++)
+                    if (arr[i] == obj_of_stt.number)
+                        arr[i] = 0;
                 break;
             }
         }
     }
+    SetEvent(obj_of_stt.hEventFrom);
 }
 
 int main() {
-    int n, k, p = 0;
-    std::cout << "array size: "; std::cin >> n;
-    std::vector<int> v(n);
-    std::cout << "quantity of 'marker' threads: "; std::cin >> k;
-    int kn = k;
-    std::thread** marker = new std::thread* [k + 1];
-    std::vector<bool> marked(k + 1);
-    marked[0] = true;
-    marker_sems = new semaphore[k + 1];
-    for (int i = 1; i < k + 1; i++) {
-        marker[i] = new std::thread(first, i, std::ref(v), std::ref(marked));
-        marker[i]->detach();
-        marker_sems[i].signal();
+    std::cout << "array size: ";
+    std::cin >> n;
+
+    arr = new int[n];
+    for (int i = 0; i < n; i++)
+        arr[i] = 0;
+
+    std::cout << "quantity of 'marker' threads: ";
+    std::cin >> quantity_of_threads;
+
+    DWORD* IDThread = new DWORD[quantity_of_threads];
+    HANDLE* hThread = new HANDLE[quantity_of_threads];
+
+    struct_to_thread* obj_of_stt = new struct_to_thread[quantity_of_threads];
+    //HANDLE* local_hEventFrom = new HANDLE[quantity_of_threads];
+
+    InitializeCriticalSection(&cs);
+
+    for (int i = 0; i < quantity_of_threads; i++) {
+        obj_of_stt[i].number = i + 1;
+        obj_of_stt[i].marked = false;
+        obj_of_stt[i].hEventTo = CreateEvent(NULL, FALSE, FALSE, NULL);
+        obj_of_stt[i].hEventFrom = CreateEvent(NULL, TRUE, FALSE, NULL);
+        //local_hEventFrom[i] = obj_of_stt[i].hEventFrom;
+
+        hThread[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thread, &obj_of_stt[i], 0, &IDThread[i]);
+        if (hThread[i] = NULL)
+            return GetLastError();
     }
-    while(true) {
-        for (int i = 1; i < kn + 1; i++) pause_sem.wait();
-        std::cout << "\n";
-        m.lock();
-        for (int i = 0; i < n; i++) std::cout << v[i] << " ";
-        m.unlock();
-        std::cout << "\n";
-        int k_;
-        std::cout << "marker to delete: "; std::cin >> k_;
-        marked[k_] = true;
-        p++;
-        marker_sems[k_].signal();
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        marker_sems[k_].wait();
-        kn--;
-        for (int i = 0; i < n; i++) std::cout << v[i] << " ";
-        for (int i = 1; i < k + 1; i++) marker_sems[i].signal();
-        if (p == k) break;
+    for (int i = 0; i < quantity_of_threads; i++)
+        SetEvent(obj_of_stt[i].hEventTo);
+
+    int marker_to_delete, quantity_of_closed = 0;
+    while (true) {
+
+        for (int i = 0; i < quantity_of_threads; i++)
+            WaitForSingleObject(obj_of_stt[i].hEventFrom, INFINITE);
+
+        /*
+        
+        2) using WaitForMultipleObjects (with the help of "local_hEventFrom[i] = obj_of_stt[i].hEventFrom");
+        
+        WaitForMultipleObjects(quantity_of_threads, local_hEventFrom, TRUE, INFINITE);
+
+
+        3) with automatic reset of hEventFrom:
+        
+        for (int i = 0; i < quantity_of_threads; i++) {
+            if (!obj_of_stt[i].marked)
+                WaitForSingleObject(obj_of_stt[i].hEventFrom, INFINITE);
+
+        */
+
+        for (int i = 0; i < n; i++)
+            std::cout << arr[i] << " ";
+
+        std::cout << "\nmarker to delete: ";
+        std::cin >> marker_to_delete;
+        marker_to_delete--;
+
+        while (marker_to_delete < 0 || marker_to_delete >= quantity_of_threads) {
+            std::cout << "wrong marker, try again: ";
+            std::cin >> marker_to_delete;
+            marker_to_delete--;
+        }
+        while (obj_of_stt[marker_to_delete].marked) {
+            std::cout << "marker has already been deleted, try again: ";
+            std::cin >> marker_to_delete;
+            marker_to_delete--;
+        }
+
+        obj_of_stt[marker_to_delete].marked = true;
+        quantity_of_closed++;
+
+        ResetEvent(obj_of_stt[marker_to_delete].hEventFrom);
+        SetEvent(obj_of_stt[marker_to_delete].hEventTo);
+        
+        WaitForSingleObject(obj_of_stt[marker_to_delete].hEventFrom, INFINITE);
+
+        for (int i = 0; i < n; i++)
+            std::cout << arr[i] << " ";
+        
+        if (quantity_of_closed == quantity_of_threads) break;
+
+        for (int i = 0; i < quantity_of_threads; i++)
+            if (!obj_of_stt[i].marked) {
+                ResetEvent(obj_of_stt[i].hEventFrom);
+                SetEvent(obj_of_stt[i].hEventTo);
+            }
     }
+
+    for (int i = quantity_of_threads - 1; i > -1; i--) {
+        CloseHandle(hThread[i]);
+        CloseHandle(obj_of_stt[i].hEventFrom);
+        CloseHandle(obj_of_stt[i].hEventTo);
+    }
+
+    DeleteCriticalSection(&cs);
+
+    //delete[] local_hEventFrom;
+    delete[] obj_of_stt;
+    delete[] hThread;
+    delete[] IDThread;
+    delete[] arr;
+
     return 0;
 }
