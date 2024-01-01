@@ -34,6 +34,7 @@ void my_thread(int i, std::vector<int>& v, std::vector<bool>& marked) {
     int quantity_of_marked = 0, random_number;
     while (true) {
         random_number = rand() % v.size();
+
         m.lock();
         if (v[random_number] == 0) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
@@ -42,31 +43,33 @@ void my_thread(int i, std::vector<int>& v, std::vector<bool>& marked) {
             quantity_of_marked++;
             m.unlock();
         }
+
         else {
             std::cout << "\nnumber: " << i
-                << ", quantity of marked elements: " << quantity_of_marked
-                << ", index of array element which cannot be marked: " << random_number
-                << '\n';
+                      << ", quantity of marked elements: " << quantity_of_marked
+                      << ", index of array element which cannot be marked: " << random_number
+                      << '\n';
             m.unlock();
+
             pause_sema.signal();
+
             marker_sems[i].wait();
             if (marked[i]) {
-                m.lock();
                 for (int &j: v)
                     if (j == i)
                         j = 0;
-                m.unlock();
-                marker_sems[i].signal();
                 break;
             }
         }
     }
+    marker_sems[i].signal();
 }
 
 int main() {
     int n;
     std::cout << "array size: ";
     std::cin >> n;
+
     std::vector<int> v(n);
 
     int quantity_of_threads;
@@ -75,9 +78,11 @@ int main() {
 
     std::vector<bool> marked(quantity_of_threads + 1);
     marked[0] = true;
+
     marker_sems = new semaphore[quantity_of_threads + 1];
 
     std::thread** marker = new std::thread*[quantity_of_threads + 1];
+
     for (int i = 1; i < quantity_of_threads + 1; i++) {
         marker[i] = new std::thread(my_thread, i, std::ref(v), std::ref(marked));
         marker[i]->detach();
@@ -95,17 +100,19 @@ int main() {
 
         std::cout << "\nmarker to delete: ";
         std::cin >> marker_to_delete;
+
         while (marker_to_delete < 1 || marker_to_delete > quantity_of_threads) {
             std::cout << "wrong marker to delete, try again: ";
             std::cin >> marker_to_delete;
         }
         while (marked[marker_to_delete]) {
-            std::cout << "marker has already deleted, try again: ";
+            std::cout << "marker has already been deleted, try again: ";
             std::cin >> marker_to_delete;
         }
 
         marked[marker_to_delete] = true;
         quantity_of_closed++;
+
         marker_sems[marker_to_delete].signal();
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
