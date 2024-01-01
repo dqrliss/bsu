@@ -75,7 +75,8 @@ int main() {
         obj_of_stt[i].hEventFrom = CreateEvent(NULL, TRUE, FALSE, NULL);
         //local_hEventFrom[i] = obj_of_stt[i].hEventFrom;
 
-        hThread[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thread, &obj_of_stt[i], 0, &IDThread[i]);
+        hThread[i] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)thread,
+            &obj_of_stt[i], 0, &IDThread[i]);
         if (hThread[i] = NULL)
             return GetLastError();
     }
@@ -90,7 +91,8 @@ int main() {
 
         /*
         
-        2) using WaitForMultipleObjects (with the help of "local_hEventFrom[i] = obj_of_stt[i].hEventFrom");
+        2) using WaitForMultipleObjects
+        (with the help of "local_hEventFrom[i] = obj_of_stt[i].hEventFrom"):
         
         WaitForMultipleObjects(quantity_of_threads, local_hEventFrom, TRUE, INFINITE);
 
