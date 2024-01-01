@@ -22,14 +22,15 @@ int main() {
     std::cin >> number_of_processes;
 
     HANDLE hSemaphore1 = CreateSemaphore(NULL, 0, number_of_notes, L"sema1");
-    //if
+    if (hSemaphore1 == NULL)
+        return GetLastError();
     HANDLE hSemaphore2 = CreateSemaphore(NULL, number_of_notes, number_of_notes, L"sema2");
+    if (hSemaphore2 == NULL)
+        return GetLastError();
 
     HANDLE hMutex = CreateMutex(NULL, FALSE, L"mutex");
-    if (hMutex == NULL) {
-        std::cout << "mutex hasn't created" << '\n';
+    if (hMutex == NULL)
         return GetLastError();
-    }
 
     HANDLE* hEvent = new HANDLE[number_of_processes];
 
@@ -43,6 +44,8 @@ int main() {
             name_of_binary_file, i, number_of_notes);
 
         hEvent[i] = CreateEvent(NULL, FALSE, FALSE, std::to_wstring(i).c_str());
+        if (hEvent[i] == NULL)
+            return GetLastError();
 
         ZeroMemory(&si[i], sizeof(STARTUPINFO));
         si[i].cb = sizeof(STARTUPINFO);
@@ -86,7 +89,7 @@ int main() {
                 is.read(str, size - 20);
                 is.close();
 
-                os.open(name_of_binary_file, std::ios::binary | std::ios::out); //trunc?
+                os.open(name_of_binary_file, std::ios::binary | std::ios::out);
                 os.write(str, size - 20);
                 os.close();
                 delete[] str;

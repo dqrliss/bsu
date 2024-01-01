@@ -8,16 +8,20 @@ int main(int argc, char* argv[]) {
     std::ofstream os;
     std::ifstream is;
 
-    HANDLE hSemaphore1 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"sema1"),
-        hSemaphore2 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"sema2");
+    HANDLE hSemaphore1 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"sema1");
+    if (hSemaphore1 == NULL)
+        return GetLastError();
+    HANDLE hSemaphore2 = OpenSemaphore(SEMAPHORE_ALL_ACCESS, FALSE, L"sema2");
+    if (hSemaphore2 == NULL)
+        return GetLastError();
 
     HANDLE hMutex = OpenMutex(SYNCHRONIZE, FALSE, L"mutex");
-    if (hMutex == NULL) {
-        std::cout << "mutex hasn't opened" << '\n';
+    if (hMutex == NULL)
         return GetLastError();
-    }
 
     HANDLE hEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, std::to_wstring(atoi(argv[2])).c_str());
+    if (hEvent == NULL)
+        return GetLastError();
     SetEvent(hEvent);
 
     int number;
