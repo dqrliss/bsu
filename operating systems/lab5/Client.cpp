@@ -15,8 +15,10 @@ int getting_note(int quantity_of_employees, std::string request, HANDLE& hNamedP
 		std::cin >> emp.id;
 	}
 	strcpy_s(out_msg, (request + " " + std::to_string(emp.id)).c_str());
-	WriteFile(hNamedPipe, out_msg, sizeof(out_msg), &dwBytesWritten, (LPOVERLAPPED)NULL);
-	ReadFile(hNamedPipe, in_msg, sizeof(in_msg), &dwBytesRead, (LPOVERLAPPED)NULL);
+	WriteFile(hNamedPipe, out_msg, sizeof(out_msg),
+		&dwBytesWritten, (LPOVERLAPPED)NULL);
+	ReadFile(hNamedPipe, in_msg, sizeof(in_msg),
+		&dwBytesRead, (LPOVERLAPPED)NULL);
 	std::cout << "\nnote from server\t" << in_msg << '\n';
 	return emp.id;
 
@@ -30,7 +32,8 @@ std::string modifying_note(int id) {
 	std::cin >> emp.name;
 	std::cout << "new hours: ";
 	std::cin >> emp.hours;
-	out_msg = std::to_string(id) + " " + emp.name + " " + std::to_string(emp.hours);
+	out_msg = std::to_string(id) + " " + emp.name + " "
+		+ std::to_string(emp.hours);
 	return out_msg;
 
 }
@@ -41,7 +44,8 @@ void completing(HANDLE& hNamedPipe, char (&out_msg)[40]) {
 	std::string smth;
 	std::cout << "\nsomething to confirm: ";
 	std::cin >> smth;
-	WriteFile(hNamedPipe, out_msg, sizeof(out_msg), &dwBytesWritten, (LPOVERLAPPED)NULL);
+	WriteFile(hNamedPipe, out_msg, sizeof(out_msg),
+		&dwBytesWritten, (LPOVERLAPPED)NULL);
 
 }
 
@@ -51,7 +55,8 @@ int main(int argc, char* argv[]) {
 	char out_msg[40] = {};
 	employee emp;
 	int i = atoi(argv[1]);
-	HANDLE hNamedPipe = CreateFile((L"\\\\.\\pipe\\some_pipe" + std::to_wstring(i)).c_str(),
+	HANDLE hNamedPipe = CreateFile((L"\\\\.\\pipe\\some_pipe"
+		+ std::to_wstring(i)).c_str(),
 		GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE,
 		(LPSECURITY_ATTRIBUTES)NULL, OPEN_EXISTING, 0, (HANDLE)NULL);
 	if (hNamedPipe == INVALID_HANDLE_VALUE)
