@@ -23,8 +23,10 @@ std::string giving_note(int emp_id, HANDLE& pipa) {
 	is.close();
 	strcpy_s(out_msg, ("id: " + std::to_string(emp.id) + ", name: " + emp.name
 		+ ", hours: " + std::to_string(emp.hours)).c_str());
-	WriteFile(pipa, out_msg, sizeof(out_msg), &dwBytesWrite, (LPOVERLAPPED)NULL);
-	ReadFile(pipa, in_msg, sizeof(in_msg), &dwBytesRead, (LPOVERLAPPED)NULL);
+	WriteFile(pipa, out_msg, sizeof(out_msg),
+		&dwBytesWrite, (LPOVERLAPPED)NULL);
+	ReadFile(pipa, in_msg, sizeof(in_msg),
+		&dwBytesRead, (LPOVERLAPPED)NULL);
 	return in_msg;
 
 }
@@ -53,7 +55,9 @@ int thread(HANDLE pipa) {
 		return GetLastError();
 
 	while (true) {
-		ReadFile(pipa, in_msg, sizeof(in_msg), &dwBytesRead, (LPOVERLAPPED)NULL);
+		if (!ReadFile(pipa, in_msg, sizeof(in_msg),
+			&dwBytesRead, (LPOVERLAPPED)NULL))
+			return GetLastError();
 
 		if (in_msg[0] == 'q') return 0;
 
@@ -113,7 +117,8 @@ int main() {
 
 	HANDLE* hNamedPipes = new HANDLE[quantity_of_processes];
 	for (int i = 0; i < quantity_of_processes; i++) {
-		hNamedPipes[i] = CreateNamedPipe((L"\\\\.\\pipe\\some_pipe" + std::to_wstring(i)).c_str(),
+		hNamedPipes[i] = CreateNamedPipe((L"\\\\.\\pipe\\some_pipe"
+			+ std::to_wstring(i)).c_str(),
 			PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE | PIPE_WAIT,
 			PIPE_UNLIMITED_INSTANCES, 0, 0, INFINITE, 0);
 		if (hNamedPipes[i] == NULL)
