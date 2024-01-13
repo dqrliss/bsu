@@ -6,6 +6,20 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -22,40 +36,65 @@ import java.io.IOException;
 public class process {
     private String input_file_name;
     private String output_file_name;
-    private String file_content;
 
     public process(String input_file_name_, String output_file_name_) throws IOException {
         input_file_name = input_file_name_;
         output_file_name = output_file_name_;
-        file_content = Files.readString(Paths.get(input_file_name));
-        System.out.println(file_content);
     }
 
     public void replace() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(input_file_name));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(output_file_name))) {
-
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
+            StringBuilder content = new StringBuilder();
             String line;
+
             while ((line = reader.readLine()) != null) {
-                String result = evaluateExpression(line);
-                writer.write(result);
-                writer.newLine();
+                content.append(line).append("\n");
             }
+            reader.close();
+
+            String modifiedContent = replaceArithmeticOperations(content.toString());
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+            writer.write(modifiedContent);
+            writer.close();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public static String evaluateExpression(String expression) {
-        ScriptEngineManager manager = new ScriptEngineManager();
-        ScriptEngine engine = manager.getEngineByName("JavaScript");
+    private static String replaceArithmeticOperations(String content) {
+        String regex = "([\\d.]+)\\s*([+\\-*/])\\s*([\\d.]+)";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(content);
 
-        try {
-            Object result = engine.eval(expression);
-            return result.toString();
-        } catch (ScriptException e) {
-            return "Ошибка в выражении";
+        while (matcher.find()) {
+            double operand1 = Double.parseDouble(matcher.group(1));
+            String operator = matcher.group(2);
+            double operand2 = Double.parseDouble(matcher.group(3));
+
+            double result = 0;
+
+            switch (operator) {
+                case "+":
+                    result = operand1 + operand2;
+                    break;
+                case "-":
+                    result = operand1 - operand2;
+                    break;
+                case "*":
+                    result = operand1 * operand2;
+                    break;
+                case "/":
+                    result = operand1 / operand2;
+                    break;
+            }
+
+            content = content.replace(matcher.group(), Double.toString(result));
         }
+
+        return content;
     }
 
 }
