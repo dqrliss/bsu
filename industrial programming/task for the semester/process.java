@@ -1,9 +1,5 @@
 package com.example.spring_semtask;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.io.BufferedReader;
@@ -12,27 +8,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-//import org.springframework.stereotype.Service;
-
-//@Service
 public class process {
     private String input_file_name;
     private String output_file_name;
@@ -44,7 +19,7 @@ public class process {
 
     public void replace() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader("input.txt"));
+            BufferedReader reader = new BufferedReader(new FileReader(input_file_name));
             StringBuilder content = new StringBuilder();
             String line;
 
@@ -55,7 +30,7 @@ public class process {
 
             String modifiedContent = replaceArithmeticOperations(content.toString());
 
-            BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(output_file_name));
             writer.write(modifiedContent);
             writer.close();
 

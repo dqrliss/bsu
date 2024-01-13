@@ -43,7 +43,7 @@ public class MainView extends VerticalLayout {
         Button button12 = new Button("check for new output file name");
         TextArea text4 = new TextArea("updated output file name");
 
-        Button button10 = new Button("write to output file");
+        Button button10 = new Button("clear");
 
         HorizontalLayout layout1 = new HorizontalLayout();
         layout1.add(text1);
@@ -86,6 +86,12 @@ public class MainView extends VerticalLayout {
         add(layout6);
 
         button1.addClickListener(event -> {
+            if (input_file_name == null) {
+                input_file_name = text1.getValue();
+            }
+            decrypt decr;
+            decr = new decrypt(input_file_name);
+            input_file_name = decr.decr();
         });
         button2.addClickListener(event -> {
         });
@@ -103,25 +109,11 @@ public class MainView extends VerticalLayout {
                 throw new RuntimeException(e);
             }
             pr.replace();
-
-            StringBuilder content = new StringBuilder();
-
-            try (BufferedReader reader = new BufferedReader(new FileReader(output_file_name))) {
-                String line;
-
-                while ((line = reader.readLine()) != null) {
-                    content.append(line).append("\n");
-                }
-
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            System.out.println("Содержимое файла " + content);
         });
-
-
         button6.addClickListener(event -> {
+            encrypt encr;
+            encr = new encrypt(output_file_name);
+            output_file_name = encr.encr();
         });
         button7.addClickListener(event -> {
         });
@@ -130,8 +122,13 @@ public class MainView extends VerticalLayout {
         button9.addClickListener(event -> {
         });
         button10.addClickListener(event -> {
-            output_file_name = text3.getValue();
-
+            input_file_name = null;
+            output_file_name = null;
+            file_content = null;
+            text1.clear();
+            text2.clear();
+            text3.clear();
+            text4.clear();
         });
         button11.addClickListener(event -> {
             if (input_file_name == null) {
